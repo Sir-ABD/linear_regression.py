@@ -1,0 +1,503 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Star, Phone, Mail, MapPin, Shield, Filter, Heart, AlertCircle, CheckCircle, X, MessageCircle, Send, Bot, User, LogOut, Menu, Bell, TrendingUp, Eye, DollarSign, Users, Calendar, BarChart3, Clock } from 'lucide-react';
+
+const NjaLinksApp = () => {
+  const [products, setProducts] = useState([]);
+  const [sellers, setSellers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [currentView, setCurrentView] = useState('login');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [sortBy, setSortBy] = useState('newest');
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showSellerProfile, setShowSellerProfile] = useState(null);
+  const [showProductDetail, setShowProductDetail] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+
+  const categories = ['All', 'Electronics', 'Fashion', 'Home & Living', 'Services', 'Automobiles', 'Food & Drinks'];
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      // Find the latest favorites array from the users state
+      const userFavs = users.find(u => u.id === currentUser.id)?.favorites || [];
+      setFavorites(userFavs);
+    }
+  }, [currentUser, users]);
+
+  const loadData = () => {
+    const sampleUsers = [
+      {
+        id: 1,
+        email: 'buyer@demo.com',
+        password: 'demo123',
+        name: 'John Buyer',
+        type: 'buyer',
+        favorites: [2],
+        preferences: { categories: ['Electronics', 'Fashion'] }
+      },
+      {
+        id: 2,
+        email: 'seller@demo.com',
+        password: 'demo123',
+        name: 'Ada Fashion Hub',
+        type: 'seller',
+        phone: '+234 805 987 6543',
+        location: 'Abuja, Nigeria',
+        verified: true,
+        rating: 4.9,
+        totalSales: 203,
+        joinedDate: '2023-11',
+        description: 'Premium fashion and accessories',
+        favorites: [1],
+        preferences: {}
+      }
+    ];
+
+    const sampleSellers = [
+      {
+        id: 1,
+        userId: 2,
+        name: 'Ada Fashion Hub',
+        phone: '+234 805 987 6543',
+        email: 'seller@demo.com',
+        location: 'Abuja, Nigeria',
+        verified: true,
+        rating: 4.9,
+        totalSales: 203,
+        joinedDate: '2023-11',
+        description: 'Premium fashion and accessories'
+      }
+    ];
+
+    const sampleProducts = [
+      {
+        id: 1,
+        sellerId: 1,
+        title: 'iPhone 13 Pro Max - 256GB',
+        description: 'Brand new, sealed with warranty. Original from authorized dealer.',
+        price: 850000,
+        priceDisplay: '₦850,000',
+        category: 'Electronics',
+        image: '📱',
+        views: 234,
+        datePosted: '2024-11-20'
+      },
+      {
+        id: 2,
+        sellerId: 1,
+        title: 'Designer Ankara Dress',
+        description: 'Handmade with premium ankara fabric. Custom sizes available.',
+        price: 35000,
+        priceDisplay: '₦35,000',
+        category: 'Fashion',
+        image: '👗',
+        views: 189,
+        datePosted: '2024-11-22'
+      },
+      {
+        id: 3,
+        sellerId: 1,
+        title: 'MacBook Pro M2 - 16GB RAM',
+        description: 'Latest model, perfect condition. Ideal for developers and creators.',
+        price: 1200000,
+        priceDisplay: '₦1,200,000',
+        category: 'Electronics',
+        image: '💻',
+        views: 456,
+        datePosted: '2024-11-19'
+      },
+      {
+        id: 4,
+        sellerId: 1,
+        title: 'Nike Air Max Sneakers',
+        description: 'Authentic Nike sneakers. Size 42. Brand new in box.',
+        price: 45000,
+        priceDisplay: '₦45,000',
+        category: 'Fashion',
+        image: '👟',
+        views: 178,
+        datePosted: '2024-11-21'
+      }
+    ];
+
+    const sampleComments = [
+      {
+        id: 1,
+        productId: 1,
+        userId: 1,
+        userName: 'John Buyer',
+        comment: 'Is this still available? Does it come with original accessories?',
+        timestamp: '2024-11-23T10:30:00',
+        replies: [
+          {
+            id: 2,
+            userId: 2,
+            userName: 'Ada Fashion Hub',
+            comment: 'Yes, still available! Comes with everything in the box.',
+            timestamp: '2024-11-23T11:00:00'
+          }
+        ]
+      }
+    ];
+
+    const sampleNotifications = [
+      {
+        id: 1,
+        userId: 2,
+        type: 'comment',
+        message: 'John Buyer commented on your iPhone 13 Pro Max',
+        timestamp: '2024-11-23T10:30:00',
+        read: false,
+        productId: 1
+      },
+      {
+        id: 2,
+        userId: 2,
+        type: 'view',
+        message: 'Your Designer Ankara Dress got 15 new views today',
+        timestamp: '2024-11-23T09:00:00',
+        read: false,
+        productId: 2
+      }
+    ];
+
+    setUsers(sampleUsers);
+    setSellers(sampleSellers);
+    setProducts(sampleProducts);
+    setComments(sampleComments);
+    setNotifications(sampleNotifications);
+  };
+
+  const addNotification = (userId, type, message, productId = null) => {
+    const newNotif = {
+      id: notifications.length + 1,
+      userId,
+      type,
+      message,
+      timestamp: new Date().toISOString(),
+      read: false,
+      productId
+    };
+    setNotifications([newNotif, ...notifications]);
+  };
+
+  const markNotificationRead = (notifId) => {
+    setNotifications(notifications.map(n => 
+      n.id === notifId ? { ...n, read: true } : n
+    ));
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const handleLogin = (email, password) => {
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      setCurrentUser(user);
+      setCurrentView('marketplace');
+      setChatMessages([{
+        type: 'bot',
+        text: `Welcome back, ${user.name}! I'm your AI assistant. I can help you find products, answer questions about sellers, or assist with your listings. How can I help you today?`
+      }]);
+    }
+    return user;
+  };
+
+  const handleRegister = (userData) => {
+    const newUser = {
+      id: users.length + 1,
+      ...userData,
+      favorites: [],
+      preferences: {}
+    };
+    setUsers([...users, newUser]);
+
+    if (userData.type === 'seller') {
+      const newSeller = {
+        id: sellers.length + 1,
+        userId: newUser.id,
+        name: userData.name,
+        phone: userData.phone,
+        email: userData.email,
+        location: userData.location,
+        description: userData.description || '',
+        verified: false,
+        rating: 0,
+        totalSales: 0,
+        joinedDate: new Date().toISOString().split('T')[0].substring(0, 7)
+      };
+      setSellers([...sellers, newSeller]);
+    }
+
+    setCurrentUser(newUser);
+    setCurrentView('marketplace');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentView('login');
+    setFavorites([]);
+    setChatMessages([]);
+    setShowNotifications(false);
+  };
+
+  const handleAddProduct = (productData) => {
+    const seller = sellers.find(s => s.userId === currentUser.id);
+    const price = parseFloat(productData.price.replace(/[^\d]/g, ''));
+    const newProduct = {
+      id: products.length + 1,
+      sellerId: seller.id,
+      ...productData,
+      price: price,
+      priceDisplay: productData.price,
+      views: 0,
+      datePosted: new Date().toISOString().split('T')[0]
+    };
+    setProducts([...products, newProduct]);
+    setShowAddProduct(false);
+    
+    addNotification(currentUser.id, 'success', `Your product "${productData.title}" has been listed successfully!`);
+  };
+
+  const toggleFavorite = (productId) => {
+    const updatedUsers = users.map(u => {
+      if (u.id === currentUser.id) {
+        const newFavorites = u.favorites.includes(productId)
+          ? u.favorites.filter(id => id !== productId)
+          : [...u.favorites, productId];
+        return { ...u, favorites: newFavorites };
+      }
+      return u;
+    });
+    setUsers(updatedUsers);
+    const updatedUser = updatedUsers.find(u => u.id === currentUser.id);
+    setCurrentUser(updatedUser);
+  };
+
+  const handleAddComment = (productId, commentText) => {
+    const newComment = {
+      id: comments.length + 1,
+      productId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      comment: commentText,
+      timestamp: new Date().toISOString(),
+      replies: []
+    };
+    setComments([...comments, newComment]);
+
+    // Notify seller
+    const product = products.find(p => p.id === productId);
+    const seller = sellers.find(s => s.id === product.sellerId);
+    if (seller && seller.userId !== currentUser.id) {
+      addNotification(seller.userId, 'comment', `${currentUser.name} commented on your ${product.title}`, productId);
+    }
+  };
+
+  const handleReplyComment = (commentId, replyText) => {
+    const updatedComments = comments.map(c => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          replies: [...c.replies, {
+            id: Date.now(),
+            userId: currentUser.id,
+            userName: currentUser.name,
+            comment: replyText,
+            timestamp: new Date().toISOString()
+          }]
+        };
+      }
+      return c;
+    });
+    setComments(updatedComments);
+
+    // Notify original commenter
+    const originalComment = comments.find(c => c.id === commentId);
+    if (originalComment && originalComment.userId !== currentUser.id) {
+      const product = products.find(p => p.id === originalComment.productId);
+      addNotification(originalComment.userId, 'reply', `${currentUser.name} replied to your comment on ${product.title}`, product.id);
+    }
+  };
+
+  const handleChatbotMessage = (message) => {
+    setChatMessages([...chatMessages, { type: 'user', text: message }]);
+    
+    setTimeout(() => {
+      let response = '';
+      const lowerMsg = message.toLowerCase();
+
+      if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+        response = `Hi ${currentUser.name}! How can I assist you today? I can help you find products, check seller ratings, or answer questions about listings.`;
+      } else if (lowerMsg.includes('find') || lowerMsg.includes('search') || lowerMsg.includes('looking for')) {
+        response = 'I can help you find products! What are you looking for? You can tell me the category (Electronics, Fashion, etc.) or specific product name. You can also use the advanced filters to narrow down by price range!';
+      } else if (lowerMsg.includes('seller') || lowerMsg.includes('trust') || lowerMsg.includes('verified')) {
+        response = 'All our sellers display verification badges and ratings. Look for the green checkmark shield icon. You can also view seller profiles to see their total sales, ratings, and contact information before making a purchase.';
+      } else if (lowerMsg.includes('contact') || lowerMsg.includes('reach') || lowerMsg.includes('phone')) {
+        response = 'To contact a seller, click on any product and then click "Contact Seller". You\'ll see their phone number, email, and location. You can call or message them directly!';
+      } else if (lowerMsg.includes('notification')) {
+        const unreadCount = notifications.filter(n => n.userId === currentUser.id && !n.read).length;
+        response = `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}. Click the bell icon in the top navigation to view them. You'll get notified about comments, replies, and product views!`;
+      } else if (lowerMsg.includes('price') || lowerMsg.includes('cost') || lowerMsg.includes('expensive') || lowerMsg.includes('cheap')) {
+        response = 'Prices are set by individual sellers. You can use the advanced filters to set a price range and sort products by price (low to high or high to low). Feel free to contact sellers directly to negotiate!';
+      } else if (lowerMsg.includes('filter') || lowerMsg.includes('sort')) {
+        response = 'Use the filter options to refine your search! You can filter by category, set a minimum and maximum price, and sort products by newest, price (low/high), or most popular. Try it out!';
+      } else if (lowerMsg.includes('analytics') || lowerMsg.includes('stats') || lowerMsg.includes('dashboard')) {
+        if (currentUser.type === 'seller') {
+          response = 'Your dashboard shows key metrics like total products, views, revenue estimates, and engagement trends. You can see which products are performing best and track your growth over time!';
+        } else {
+          response = 'Analytics and detailed statistics are available for sellers in their dashboard. As a buyer, you can see product popularity through view counts and ratings!';
+        }
+      } else if (lowerMsg.includes('how to sell') || lowerMsg.includes('become seller') || lowerMsg.includes('start selling')) {
+        if (currentUser.type === 'seller') {
+          response = 'You\'re already registered as a seller! Go to "My Dashboard" to add products. Click "Add Product", fill in the details, and your product will be visible to all buyers on 9jaLinks.';
+        } else {
+          response = 'To become a seller, you\'ll need to register a seller account with your business details. Would you like me to guide you through the registration process?';
+        }
+      } else if (lowerMsg.includes('safe') || lowerMsg.includes('scam') || lowerMsg.includes('secure')) {
+        response = '9jaLinks prioritizes safety! We verify sellers, display ratings, and provide transparent contact information. Always check seller ratings and reviews before purchasing. Meet in safe public locations for exchanges when possible.';
+      } else if (lowerMsg.includes('electronics')) {
+        const electronicsCount = products.filter(p => p.category === 'Electronics').length;
+        response = `We currently have ${electronicsCount} electronics products available. Check out the Electronics category to see phones, laptops, and more!`;
+      } else if (lowerMsg.includes('fashion')) {
+        const fashionCount = products.filter(p => p.category === 'Fashion').length;
+        response = `We have ${fashionCount} fashion items available. Browse the Fashion category to see clothing, accessories, and more!`;
+      } else {
+        response = 'I\'m here to help! You can ask me about:\n• Finding products & using filters\n• Seller verification and ratings\n• How to contact sellers\n• Notifications & alerts\n• Becoming a seller\n• Analytics & dashboard features\n• Safety tips\n\nWhat would you like to know?';
+      }
+
+      setChatMessages(prev => [...prev, { type: 'bot', text: response }]);
+    }, 500);
+  };
+
+  const getFilteredAndSortedProducts = () => {
+    let filtered = products.filter(product => {
+      const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || 
+                             product.category.toLowerCase() === selectedCategory.toLowerCase();
+      
+      const minPrice = priceRange.min ? parseFloat(priceRange.min) : 0;
+      const maxPrice = priceRange.max ? parseFloat(priceRange.max) : Infinity;
+      const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
+
+      return matchesSearch && matchesCategory && matchesPrice;
+    });
+
+    // Sort products
+    switch(sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'popular':
+        filtered.sort((a, b) => b.views - a.views);
+        break;
+      case 'newest':
+      default:
+        filtered.sort((a, b) => new Date(b.datePosted) - new Date(a.datePosted));
+    }
+
+    return filtered;
+  };
+
+  const getSellerById = (id) => sellers.find(s => s.id === id);
+  const getProductComments = (productId) => comments.filter(c => c.productId === productId);
+  const getUserNotifications = () => notifications.filter(n => n.userId === currentUser?.id);
+  const getUnreadCount = () => notifications.filter(n => n.userId === currentUser?.id && !n.read).length;
+
+  // Analytics for sellers
+  const getSellerAnalytics = (sellerId) => {
+    const sellerProducts = products.filter(p => p.sellerId === sellerId);
+    const totalViews = sellerProducts.reduce((sum, p) => sum + p.views, 0);
+    // Mock revenue as the sum of all product prices (for demonstration)
+    const totalRevenue = sellerProducts.reduce((sum, p) => sum + p.price, 0); 
+    const avgViews = sellerProducts.length > 0 ? Math.round(totalViews / sellerProducts.length) : 0;
+    const totalComments = sellerProducts.reduce((sum, p) => sum + getProductComments(p.id).length, 0);
+    
+    return {
+      totalProducts: sellerProducts.length,
+      totalViews,
+      totalRevenue,
+      avgViews,
+      totalComments,
+      // Top product based on views
+      topProduct: sellerProducts.length > 0 ? sellerProducts.sort((a, b) => b.views - a.views)[0] : null
+    };
+  };
+
+  // Login View
+  const LoginView = () => {
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({
+      email: '',
+      password: '',
+      name: '',
+      type: 'buyer',
+      phone: '',
+      location: '',
+      description: ''
+    });
+    const [error, setError] = useState('');
+
+    const handleSubmit = () => {
+      setError('');
+      if (isLogin) {
+        const user = handleLogin(formData.email, formData.password);
+        if (!user) {
+          setError('Invalid email or password. Try demo accounts: buyer@demo.com or seller@demo.com (password: demo123)');
+        }
+      } else {
+        if (!formData.email || !formData.password || !formData.name) {
+          setError('Please fill in all required fields (Name, Email, Password).');
+          return;
+        }
+        if (formData.type === 'seller' && (!formData.phone || !formData.location)) {
+          setError('Sellers must provide phone and location for verification.');
+          return;
+        }
+        handleRegister(formData);
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-2">🇳🇬</div>
+            <h1 className="text-3xl font-bold text-green-600 mb-2">9jaLinks</h1>
+            <p className="text-gray-600">Nigeria's Trusted Marketplace</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+              <AlertCircle size={18} className="inline mr-2" />
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-lg">
+            <button
+              onClick={() => { setIsLogin(true); setError(''); }}
+              className={`flex-1 py-2 rounded-lg font-semibold transition ${isLogin ? 'bg-green-600 text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white'}`}
+            >
+              Login
+            </button>
+            <button
+              onClick={() => { setIsLogin(false); setError(''); }}
+              className={`flex-1 py-2 rounded-lg font-semibold transition ${!isLogin ? 'bg-green-600 text-white sha
